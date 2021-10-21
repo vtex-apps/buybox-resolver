@@ -1,49 +1,30 @@
-import type { ParamsContext, RecorderState, ServiceContext } from '@vtex/api'
-import { Service } from '@vtex/api'
-import { prop } from 'ramda'
+import type { Cached, RecorderState } from '@vtex/api'
+import { LRUCache, Service } from '@vtex/api'
+import schema from 'vtex.buybox-graphql/graphql'
 
 import { Clients } from './clients'
-import { book } from './resolvers/book'
-import { books } from './resolvers/books'
-import { deleteBook } from './resolvers/delete'
-import { editBook } from './resolvers/editBook'
-import { newBook } from './resolvers/newBook'
-import { source } from './resolvers/source'
-import { total } from './resolvers/total'
+import { schemaDirectives } from './directives'
+import { resolvers } from './resolvers'
 
-const MEDIUM_TIMEOUT_MS = 2 * 1000
+const THREE_SECONDS_MS = 3 * 1000
 
-declare global {
-  // We declare a global Context type just to avoid re-writing ServiceContext<Clients, State> in every handler and resolver
-  type Context = ServiceContext<Clients>
-}
+const searchCache = new LRUCache<string, Cached>({ max: THREE_SECONDS_MS })
 
-// Export a service that defines resolvers and clients' options
-export default new Service<Clients, RecorderState, ParamsContext>({
+metrics.trackCache('search', searchCache)
+
+export default new Service<Clients, RecorderState, CustomContext>({
   clients: {
     implementation: Clients,
     options: {
       default: {
-        timeout: MEDIUM_TIMEOUT_MS,
+        retries: 2,
+        timeout: THREE_SECONDS_MS,
       },
     },
   },
   graphql: {
-    resolvers: {
-      Book: {
-        cacheId: prop('id'),
-      },
-      Mutation: {
-        delete: deleteBook,
-        editBook,
-        newBook,
-      },
-      Query: {
-        book,
-        books,
-        source,
-        total,
-      },
-    },
+    resolvers,
+    schema,
+    schemaDirectives,
   },
 })

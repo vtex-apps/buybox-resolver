@@ -15,6 +15,7 @@ export const queries = {
       vtex: { segment },
     } = ctx
 
+    console.log('oi')
     const { skuId, country, postalCode } = rawArgs
     const salesChannel = rawArgs.salesChannel ?? segment?.channel
 

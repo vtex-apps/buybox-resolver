@@ -1,10 +1,9 @@
 {
   "name": "buybox-resolver",
-  "vendor": "vtex",
-  "version": "0.1.1",
+  "vendor": "farmina",
+  "version": "0.0.0",
   "title": "GraphQL resolver for the VTEX store APIs",
   "description": "GraphQL resolvers for the VTEX API for the buybox.",
-  "mustUpdateAt": "2022-01-04",
   "categories": [],
   "dependencies": {
     "vtex.catalog-api-proxy": "0.x",

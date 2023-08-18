@@ -11,11 +11,10 @@ interface ProductArgs {
 export const queries = {
   sortSellers: async (_: unknown, rawArgs: ProductArgs, ctx: Context) => {
     const {
-      clients: { search, checkout },
+      clients: { search, checkout, masterdata },
       vtex: { segment },
     } = ctx
 
-    console.log('oi')
     const { skuId, country, postalCode } = rawArgs
     const salesChannel = rawArgs.salesChannel ?? segment?.channel
 
@@ -60,10 +59,34 @@ export const queries = {
       }
     })
 
-    sellerLogisticsInfo?.sort(
-      (a, b) => a.seller.commertialOffer.Price - b.seller.commertialOffer.Price
-    )
+    try {
+      const masterDataPriorityRules = await masterdata.searchDocuments({
+        dataEntity: 'SR',
+        fields: ['ruleName', 'priority'],
+        pagination: {
+          page: 1,
+          pageSize: 50,
+        },
+      })
 
-    return { sellers: sellerLogisticsInfo?.map((sli) => sli.seller.sellerId) }
+      masterDataPriorityRules.forEach(({ ruleName, priority }: any) => {
+        if (ruleName.includes('farmina') && priority === 10) {
+          return sellerLogisticsInfo?.sort((a, b) => {
+            return a.seller.sellerName.localeCompare(b.seller.sellerName)
+          })
+        }
+
+        return sellerLogisticsInfo?.sort(
+          (a, b) =>
+            a.seller.commertialOffer.Price - b.seller.commertialOffer.Price
+        )
+      })
+
+      return { sellers: sellerLogisticsInfo?.map((sli) => sli.seller.sellerId) }
+    } catch (error) {
+      console.error(error)
+    }
+
+    return { sellers: [] }
   },
 }

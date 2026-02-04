@@ -1,7 +1,7 @@
 {
   "name": "buybox-resolver",
   "vendor": "vtex",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "title": "GraphQL resolver for the VTEX store APIs",
   "description": "GraphQL resolvers for the VTEX API for the buybox.",
   "mustUpdateAt": "2022-01-04",
